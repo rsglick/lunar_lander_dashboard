@@ -1,5 +1,6 @@
 import os
 from multiprocessing import Pool
+import base64
 
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -26,15 +27,23 @@ st.set_page_config(
 
 st.title(titleString)
 
+
+RL_ALG_DICT = {
+    "PPO": PPO,
+    "SAC": SAC,
+    "TD3": TD3,
+    "Random": None,
+}
+
 ## https://github.com/openai/gym/blob/master/gym/envs/__init__.py
-env_list =[
+ENV_LIST =[
     # "CartPole-v1",
     "Pendulum-v0",
     "MountainCarContinuous-v0",
     "LunarLanderContinuous-v2",
     "BipedalWalkerHardcore-v3",
 ]
-env_name = st.selectbox('Select Environment', env_list, index=2)
+env_name = st.selectbox('Select Environment', ENV_LIST, index=2)
 training_timesteps = st.number_input("Training Timesteps: ", value=10, min_value=10, max_value=10000, step=1000)
 video_frame_length = st.number_input("Testing  Timesteps: ", value=10, min_value=10, max_value=2000, step=100)
 
@@ -55,7 +64,7 @@ def eval_agent(model=None):
     env.close()
     return vid
     
-def create_vid(vid, vid_name):
+def create_vid(vid, vid_name, gif=True):
     fig = plt.figure()
     im = plt.imshow(vid[0], interpolation='none', aspect='auto', vmin=0, vmax=1)
 
@@ -69,7 +78,14 @@ def create_vid(vid, vid_name):
                                 interval = len(vid) / 60, # in ms
                                 )
 
-    anim.save(f'{vid_name}.mp4', fps=60)
+    if gif:
+        writer = animation.ImageMagickWriter(fps=60)
+        vid_name = f"{vid_name}.gif"
+        anim.save(vid_name, writer=writer)
+    else:
+        vid_name = f"{vid_name}.mp4"
+        anim.save(vid_name, fps=60)
+    return vid_name
     
 def worker(col, rl_alg_name, rl_alg):
     col.header(f"{rl_alg_name} Agent")
@@ -84,45 +100,38 @@ def worker(col, rl_alg_name, rl_alg):
 
     with st.spinner(f'Testing ({rl_alg_name}) Agent in Process...'):
         vid = eval_agent(model=model)
-        create_vid(vid, rl_alg_name)
-        with open(f'{rl_alg_name}.mp4', 'rb') as vid:
-            vid_bytes = vid.read()
-        col.video(vid_bytes)
+        vid_name = create_vid(vid, rl_alg_name)
 
-rl_alg_dict = {
-    "PPO": PPO,
-    "SAC": SAC,
-    "TD3": TD3,
-    "Random": None,
-}
-# rl_alg_name = st.selectbox('RL Algorithm: PPO / SAC / TD3:',rl_alg_dict.keys())
+        if "mp4" in vid_name:
+            with open(vid_name, 'rb') as vid:
+                vid_bytes = vid.read()
+            col.video(vid_bytes)
+        else:
+            file_ = open(vid_name, "rb")
+            contents = file_.read()
+            data_url = base64.b64encode(contents).decode("utf-8")
+            file_.close()
+
+            col.markdown(
+                f'<img src="data:image/gif;base64,{data_url}" alt="cat gif" width=400 height=400>',
+                unsafe_allow_html=True,
+            )           
+
+
 
 cols = st.columns(4)
-
-for col, (rl_alg_name, rl_alg) in zip(cols, rl_alg_dict.items()):
+for col, (rl_alg_name, rl_alg) in zip(cols, RL_ALG_DICT.items()):
     worker(col, rl_alg_name, rl_alg)
 
 
-
+# Attempt to use pool
 # starmap_iter = []
-# for col, (rl_alg_name, rl_alg) in zip(cols, rl_alg_dict.items()):
+# for col, (rl_alg_name, rl_alg) in zip(cols, RL_ALG_DICT.items()):
 #     starmap_iter.append([col, rl_alg_name, rl_alg])
 # # st.write(starmap_iter)
 # with Pool() as pool:
 #     pool.starmap(worker, starmap_iter)
     
-
-
-
-# vid = eval_agent(model=None)
-# create_vid(vid, "random")
-# with open('random.mp4', 'rb') as vid:
-#     vid_bytes = vid.read()
-# col[-1].video(vid_bytes)
-
-
-
-
 
 
 st.sidebar.markdown("---")
