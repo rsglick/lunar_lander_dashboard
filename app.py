@@ -25,7 +25,7 @@ env_list =[
     "LunarLanderContinuous-v2",
     "BipedalWalkerHardcore-v3",
 ]
-env_name = env_list[2]
+env_name = env_list[0]
 
 # This doesn't work in Heroku since torch is huge
 # from stable_baselines3 import PPO, SAC
