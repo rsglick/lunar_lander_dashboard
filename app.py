@@ -44,8 +44,8 @@ ENV_LIST =[
     "BipedalWalkerHardcore-v3",
 ]
 env_name = st.selectbox('Select Environment', ENV_LIST, index=2)
-training_timesteps = st.number_input("Training Timesteps: ", value=10, min_value=10, max_value=10000, step=1000)
-video_frame_length = st.number_input("Testing  Timesteps: ", value=10, min_value=10, max_value=2000, step=100)
+training_timesteps = st.number_input("Training Timesteps: ", value=100, min_value=10, max_value=10000, step=1000)
+video_frame_length = st.number_input("Testing  Timesteps: ", value=100, min_value=10, max_value=2000, step=100)
 
 def eval_agent(model=None):
     env = gym.make(env_name)
