@@ -25,12 +25,12 @@ env_list =[
     "LunarLanderContinuous-v2",
     "BipedalWalkerHardcore-v3",
 ]
-env_name = env_list[0]
+env_name = env_list[2]
 
-from stable_baselines3 import PPO, SAC
-env = gym.make(env_name)
-model = PPO("MlpPolicy", env, verbose=1)
-model.learn(total_timesteps=10)
+# from stable_baselines3 import PPO, SAC
+# env = gym.make(env_name)
+# model = PPO("MlpPolicy", env, verbose=1)
+# model.learn(total_timesteps=10)
 
 env = gym.make(env_name)
 vid = []
