@@ -1,3 +1,5 @@
+import os
+
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
@@ -5,6 +7,8 @@ import streamlit as st
 
 import gym
 
+os.system("Xvfb :1 -screen 0 1024x768x24 &")
+os.environ['DISPLAY'] = ':1'
 
 titleString = "Lunar Lander Dashboard"
 st.set_page_config(
