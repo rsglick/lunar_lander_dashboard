@@ -1,16 +1,9 @@
-import time
-
-
-import pandas as pd
-import altair as alt
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 import streamlit as st
 
 import gym
-from gym import wrappers
-from stable_baselines3 import PPO, SAC
 
 
 titleString = "Lunar Lander Dashboard"
@@ -34,17 +27,19 @@ env_list =[
 ]
 env_name = env_list[2]
 
-env = gym.make(env_name)
-model = PPO("MlpPolicy", env, verbose=1)
-model.learn(total_timesteps=10)
+# This doesn't work in Heroku since torch is huge
+# from stable_baselines3 import PPO, SAC
+# env = gym.make(env_name)
+# model = PPO("MlpPolicy", env, verbose=1)
+# model.learn(total_timesteps=10)
 
 env = gym.make(env_name)
-# env = wrappers.Monitor(env, f"./tmp/{env_name}", force=True)
 vid = []
 
 obs = env.reset()
 for i in range(100):
-    action, _states = model.predict(obs, deterministic=True)
+    # action, _states = model.predict(obs, deterministic=True)
+    action = env.action_space.sample()
     obs, reward, done, info = env.step(action)
     # env.render()
     vid.append(env.render(mode="rgb_array"))
