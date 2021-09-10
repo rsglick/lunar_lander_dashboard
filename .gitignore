@@ -131,3 +131,4 @@ dmypy.json
 .vscode/
 *.mp4
 *.gif
+conda_env
