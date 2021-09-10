@@ -175,8 +175,8 @@ class Agent:
  
 st.title(titleString)
 
-env_name = st.selectbox('Select Environment', ENV_LIST, index=2)
-# env_name = ENV_LIST[2]
+# env_name = st.selectbox('Select Environment', ENV_LIST, index=2)
+env_name = ENV_LIST[2]
 st.header(f"{env_name} - https://gym.openai.com/envs/{env_name}/")
 
 rl_algs_chosen = st.multiselect('Select RL Agents:', RL_ALG_DICT.keys() )
