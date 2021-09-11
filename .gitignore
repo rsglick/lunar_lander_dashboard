@@ -133,3 +133,4 @@ dmypy.json
 *.gif
 conda_env
 *.npz
+outputs/
