@@ -1,5 +1,6 @@
 import warnings
-warnings.filterwarnings('ignore')
+
+warnings.filterwarnings("ignore")
 
 import os
 import base64
@@ -17,35 +18,37 @@ from stable_baselines3 import PPO, SAC, TD3
 
 # CONSTANTS
 RL_ALG_DICT = {
-"PPO": PPO,
-"SAC": SAC,
-"TD3": TD3,
-"Random": None,
+    "PPO": PPO,
+    "SAC": SAC,
+    "TD3": TD3,
+    "Random": None,
 }
 
 ## https://github.com/openai/gym/blob/master/gym/envs/__init__.py
-ENV_LIST =[
-# "CartPole-v1",
-"Pendulum-v0",
-"MountainCarContinuous-v0",
-"LunarLanderContinuous-v2",
-"BipedalWalkerHardcore-v3",
+ENV_LIST = [
+    # "CartPole-v1",
+    "Pendulum-v0",
+    "MountainCarContinuous-v0",
+    "LunarLanderContinuous-v2",
+    "BipedalWalkerHardcore-v3",
 ]
 
 ###
 
+
 def sidebar_footer():
     st.sidebar.markdown("---")
     st.sidebar.markdown(
-    """
+        """
     [<img src='https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png' class='img-fluid' width=50 height=50>]
     (https://github.com/rsglick/lunar_lander_dashboard) <small> Dashboard Beta </small>""",
-    unsafe_allow_html=True,
+        unsafe_allow_html=True,
     )
+
 
 # This is required since Gym is dumb and forces a new window for render.
 os.system("Xvfb :1 -screen 0 1024x768x24 &")
-os.environ['DISPLAY'] = ':1'
+os.environ["DISPLAY"] = ":1"
 
 
 titleString = "Continous Gym Environment Dashboard"
@@ -53,15 +56,16 @@ st.set_page_config(
     page_title=titleString,
     # page_icon=":)",
     layout="wide",
-    initial_sidebar_state="collapsed" #  ("auto" or "expanded" or "collapsed")
+    initial_sidebar_state="collapsed",  #  ("auto" or "expanded" or "collapsed")
 )
+
 
 class Agent:
     def __init__(self, env_name=None, rl_alg_name="Random"):
-        self.env_name     = env_name
-        self.rl_alg_name  = rl_alg_name
-        
-        self.video_rgb_array = [] 
+        self.env_name = env_name
+        self.rl_alg_name = rl_alg_name
+
+        self.video_rgb_array = []
         self.gif_url = None
 
     @property
@@ -76,7 +80,10 @@ class Agent:
 
     @property
     def episode_statistics_fpath(self):
-        return self.output_dir / f"{self.rl_alg_name}_{self.env_name}_episode_statistics.csv"
+        return (
+            self.output_dir
+            / f"{self.rl_alg_name}_{self.env_name}_episode_statistics.csv"
+        )
 
     @property
     def video_path(self):
@@ -102,7 +109,7 @@ class Agent:
     @property
     def model(self):
         if self.rl_alg_name == "Random":
-           return "Random"
+            return "Random"
 
         model_path = pathlib.Path(f"./models/model{rl_alg_name}_{env_name}.zip")
         if model_path.exists():
@@ -136,7 +143,7 @@ class Agent:
                 action = env.action_space.sample()
             else:
                 action, _states = self.model.predict(obs, deterministic=True)
-                
+
             obs, reward, done, info = env.step(action)
             vid.append(env.render(mode="rgb_array"))
             if done:
@@ -145,8 +152,8 @@ class Agent:
 
         self.video_rgb_array = vid
         df_info = pd.DataFrame(info).T.reset_index(drop=True)
-        df_info.index.name = 'episode'
-        df_info["r_threshold"] = reward_threshold     
+        df_info.index.name = "episode"
+        df_info["r_threshold"] = reward_threshold
         df_info.to_csv(self.episode_statistics_fpath)
 
     def create_gif(self):
@@ -154,39 +161,44 @@ class Agent:
             return
 
         fig = plt.figure()
-        im = plt.imshow(self.video_rgb_array[0], interpolation='none', aspect='auto', vmin=0, vmax=1)
+        im = plt.imshow(
+            self.video_rgb_array[0], interpolation="none", aspect="auto", vmin=0, vmax=1
+        )
 
         def animate(i):
             im.set_array(self.video_rgb_array[i])
             return [im]
-        
+
         fps = 30
         anim = animation.FuncAnimation(
-                                    fig, 
-                                    animate, 
-                                    frames = len(self.video_rgb_array),
-                                    interval = len(self.video_rgb_array) / fps, # in ms
-                                    )
+            fig,
+            animate,
+            frames=len(self.video_rgb_array),
+            interval=len(self.video_rgb_array) / fps,  # in ms
+        )
 
         writer = animation.ImageMagickWriter(fps=fps)
         anim.save(self.gif_path, writer=writer)
 
-    def write_gif_file(self):     
+    def write_gif_file(self):
         file_ = open(self.gif_path, "rb")
         contents = file_.read()
         gif_url = base64.b64encode(contents).decode("utf-8")
         file_.close()
         self.gif_url = gif_url
- 
+
+
 st.title(titleString)
 
 # env_name = st.selectbox('Select Environment', ENV_LIST, index=2)
 env_name = ENV_LIST[2]
 st.header(f"{env_name} - https://gym.openai.com/envs/{env_name}/")
 
-rl_algs_chosen   = st.multiselect('Select RL Agents:', RL_ALG_DICT.keys() )
-rl_alg_used_dict = {key:value for key, value in RL_ALG_DICT.items() if key in rl_algs_chosen}
-test_agents_bool = st.checkbox('Test Agents', value=False)
+rl_algs_chosen = st.multiselect("Select RL Agents:", RL_ALG_DICT.keys())
+rl_alg_used_dict = {
+    key: value for key, value in RL_ALG_DICT.items() if key in rl_algs_chosen
+}
+test_agents_bool = st.checkbox("Test Agents", value=False)
 
 if test_agents_bool and rl_alg_used_dict:
     cols = st.columns(len(rl_alg_used_dict))
@@ -196,18 +208,22 @@ if test_agents_bool and rl_alg_used_dict:
 
         agent = Agent(env_name, rl_alg_name)
 
-        with st.spinner(f'Testing ({agent.rl_alg_name}) Agent ...'):
+        with st.spinner(f"Testing ({agent.rl_alg_name}) Agent ..."):
             agent.test_agent()
 
-        with st.spinner(f'Creating ({agent.rl_alg_name}) Agent GIF  ...'):
+        with st.spinner(f"Creating ({agent.rl_alg_name}) Agent GIF  ..."):
             agent.create_gif()
-            agent.write_gif_file()    
+            agent.write_gif_file()
 
-        col.write(f"Reward Threshold: {agent.episode_statistics['r_threshold'].values[0]:.3f}")
-        col.write(f"Reward: {agent.episode_statistics['r'].mean():.3f}") # +/- {agent.episode_statistics['r'].std():.3f}")
+        col.write(
+            f"Reward Threshold: {agent.episode_statistics['r_threshold'].values[0]:.3f}"
+        )
+        col.write(
+            f"Reward: {agent.episode_statistics['r'].mean():.3f}"
+        )  # +/- {agent.episode_statistics['r'].std():.3f}")
         col.markdown(
             f'<img src="data:image/gif;base64,{agent.gif_url}" alt="RL GIF" width=400 height=400>',
             unsafe_allow_html=True,
-        ) 
+        )
 
 sidebar_footer()
