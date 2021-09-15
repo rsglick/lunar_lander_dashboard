@@ -36,9 +36,9 @@ ENV_LIST = [
 ###
 
 
-def sidebar_footer():
-    st.sidebar.markdown("---")
-    st.sidebar.markdown(
+def footer():
+    st.markdown("---")
+    st.markdown(
         """
     [<img src='https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png' class='img-fluid' width=50 height=50>]
     (https://github.com/rsglick/lunar_lander_dashboard) <small> Dashboard Beta </small>""",
@@ -226,4 +226,4 @@ if test_agents_bool and rl_alg_used_dict:
             unsafe_allow_html=True,
         )
 
-sidebar_footer()
+footer()
